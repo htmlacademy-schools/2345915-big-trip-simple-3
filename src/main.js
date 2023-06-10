@@ -11,7 +11,7 @@ import NewTripPointButtonView from './view/new-trip-point-button-view.js';
 
 import TripPointApiService from './api/trip-point-api-service.js';
 
-const AUTHORIZATION = 'Basic goryat_Fonari_Token';
+const AUTHORIZATION = 'Basic goryatFonariToken';
 const END_POINT = 'https://18.ecmascript.pages.academy/big-trip';
 
 const boardContainer = document.querySelector('.trip-events');
