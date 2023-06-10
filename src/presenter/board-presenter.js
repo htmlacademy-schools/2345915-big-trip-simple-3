@@ -73,9 +73,8 @@ export default class BoardPresenter {
     return this.#offersModel.offers;
   }
 
-  init() {
-
-    this.#renderBoard();
+  async init() {
+    await this.#renderBoard();
   }
 
   createTripPoint() {
@@ -93,7 +92,6 @@ export default class BoardPresenter {
     this.#uiBlocker.block();
     switch (actionType) {
       case UserAction.ADD_TRIPPOINT:
-        this.#tripPointPresenter.get(update.id).setSaving();
         try {
           await this.#tripPointsModel.addTripPoint(updateType, update);
         } catch(err) {
@@ -216,13 +214,13 @@ export default class BoardPresenter {
     }
   }
 
-  #renderBoard() {
+  async #renderBoard() {
 
     if(this.#isLoading) {
       this.#renderLoading();
       return;
     }
-    const tripPoints = this.tripPoints;
+    const tripPoints = await this.tripPoints;
 
     if (tripPoints.length === 0) {
       this.#renderNoTripPoints();

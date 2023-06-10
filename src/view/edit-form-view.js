@@ -1,15 +1,15 @@
-import { capitalizeType, getItemFromItemsById } from '../utils/utils.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { convertToBasicime } from '../utils/formatTime-Utils.js';
 import { pointTypes } from '../const.js';
 import he from 'he';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import {capitalizeType, getItemFromItemsById} from '../utils/utils.js';
 
 const BLANK_TRIPPOINT = {
   basePrice: 999,
-  dateFrom: '2019-07-18T20:20:13.375Z',
-  dateTo: '2019-07-18T21:40:13.375Z',
+  dateFrom: '2023-06-18T20:20:13.375Z',
+  dateTo: '2023-06-18T21:40:13.375Z',
   destination: undefined,
   id: 0,
   offersIDs: [],
@@ -37,8 +37,8 @@ const createOffersTemplate = (currentTypeOffers, checkedOffers, id, isDisabled) 
     const isOfferChecked = checkedOffers.includes(offer.id) ? 'checked' : '';
     return `
     <div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title.split(' ').at(-1)}-${id}" type="checkbox" name="event-offer-${offer.title.split(' ').at(-1)}" ${isOfferChecked} ${(isDisabled) ? 'disabled' : ''}>
-      <label class="event__offer-label" for="event-offer-${offer.title.split(' ').at(-1)}-${id}">
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.id}-${id}" type="checkbox" name="event-offer-${offer.id}" ${isOfferChecked} ${(isDisabled) ? 'disabled' : ''}>
+      <label class="event__offer-label" for="event-offer-${offer.id}-${id}">
         <span class="event__offer-title">${offer.title}</span>
         &plus;&euro;&nbsp;
         <span class="event__offer-price">${offer.price}</span>
@@ -49,7 +49,11 @@ const createOffersTemplate = (currentTypeOffers, checkedOffers, id, isDisabled) 
 );
 
 const createEventDetailsTemplate = (tripPoint, destination, offers, isDisabled) => {
-  const currentTypeOffers = offers.find((el) => el.type === tripPoint.type).offers;
+  const currentTypes = offers.find((el) => el.type === tripPoint.type);
+  let currentTypeOffers = [];
+  if (currentTypes) {
+    currentTypeOffers = currentTypes.offers;
+  }
   return `
   <section class="event__section  event__section--offers ${(currentTypeOffers.length === 0) ? 'visually-hidden' : ''}" >
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -165,6 +169,10 @@ export default class EditFormView extends AbstractStatefulView {
 
   constructor({tripPoint = BLANK_TRIPPOINT, destinations, offers, onFormSubmit, onRollUpButton, isEditForm = true, onDeleteClick}) {
     super();
+    if (tripPoint === BLANK_TRIPPOINT) {
+      tripPoint.destination = Math.floor(Math.random() * destinations.length);
+      tripPoint.type = pointTypes[Math.floor(Math.random() * pointTypes.length)];
+    }
     this._setState(EditFormView.parseTripPointToState(tripPoint, offers));
 
     this.#destinations = destinations;
@@ -309,7 +317,7 @@ export default class EditFormView extends AbstractStatefulView {
 
   #offersHandler = (evt) => {
     evt.preventDefault();
-    const clickedOfferId = this._state.currentTypeOffers.find((offer) => offer.title.split(' ').at(-1) === evt.target.name.split('-').at(-1)).id;
+    const clickedOfferId = Number(evt.target.name.split('-').at(-1));
     const newOffersIds = this._state.offersIDs.slice();
     if (newOffersIds.includes(clickedOfferId)) {
       newOffersIds.splice(newOffersIds.indexOf(clickedOfferId), 1);
@@ -322,8 +330,13 @@ export default class EditFormView extends AbstractStatefulView {
   };
 
   static parseTripPointToState(tripPoint, offers) {
+    const currentTypes = offers.find((el) => el.type === tripPoint.type);
+    let currentTypeOffers = [];
+    try {
+      currentTypeOffers = currentTypes.offers;
+    } catch (err) {location.reload();}
     return {...tripPoint,
-      currentTypeOffers: offers.find((el) => el.type === tripPoint.type).offers,
+      currentTypeOffers,
       isDisabled: false,
       isSaving: false,
       isDeleting: false,
