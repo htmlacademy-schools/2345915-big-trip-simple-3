@@ -48,14 +48,6 @@ export default class NewTripPointPresenter {
     document.body.removeEventListener('keydown', this.#ecsKeyDownHandler);
   }
 
-
-  #ecsKeyDownHandler = (evt) => {
-    if (isEscapeKey(evt)) {
-      evt.preventDefault();
-      this.destroy();
-    }
-  };
-
   setSaving() {
     this.#tripPointEditComponent.updateElement({
       isDisabled: true,
@@ -75,16 +67,21 @@ export default class NewTripPointPresenter {
     this.#tripPointEditComponent.shake(resetFormState);
   }
 
+  #ecsKeyDownHandler = (evt) => {
+    if (isEscapeKey(evt)) {
+      evt.preventDefault();
+      this.destroy();
+    }
+  };
+
   #handleFormSubmit = (tripPoint) => {
     this.#handleDataChange(
       UserAction.ADD_TRIPPOINT,
       UpdateType.MINOR,
 
       this.#deleteId(tripPoint)
-
     );
 
-    this.destroy();
   };
 
   #handleDeleteClick = () => {
